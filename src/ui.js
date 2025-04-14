@@ -1,30 +1,30 @@
-// UIの更新（画面表示切り替え、問題・結果表示、ハイスコア表示など）
+// ui.js (画像パス修正済み)
 
 const ui = {
-    // DOM要素
+    // DOM要素 (変更なし)
     startScreen: document.getElementById('start-screen'),
     quizScreen: document.getElementById('quiz-screen'),
     resultsScreen: document.getElementById('results-screen'),
     questionCounter: document.getElementById('question-counter'),
-    timerDisplay: document.getElementById('timer'), // タイマー表示用
+    timerDisplay: document.getElementById('timer'),
     quizImage: document.getElementById('quiz-image'),
     questionText: document.getElementById('question-text'),
     answerOptionsContainer: document.getElementById('answer-options'),
     feedbackText: document.getElementById('feedback-text'),
-    infoImage: document.getElementById('info-image'), // 詳細情報用
-    nextQuestionBtn: document.getElementById('next-question-btn'), // 「次の問題へ」/「結果を見る」ボタン
+    infoImage: document.getElementById('info-image'),
+    nextQuestionBtn: document.getElementById('next-question-btn'),
     scoreDisplay: document.getElementById('score'),
     timeTakenDisplay: document.getElementById('time-taken'),
     resultsDetailsContainer: document.getElementById('results-details'),
-    highScoresArea: document.getElementById('high-scores-area'), // ハイスコア表示エリア
-    quizRef: null, // quiz オブジェクトへの参照を保持
+    highScoresArea: document.getElementById('high-scores-area'),
+    quizRef: null,
 
-    // quiz オブジェクトへの参照を受け取るメソッド
+    // quiz オブジェクトへの参照を受け取るメソッド (変更なし)
     setQuizReference(quizObject) {
         this.quizRef = quizObject;
     },
 
-    // スクリーン表示切り替え
+    // スクリーン表示切り替え (変更なし)
     showScreen(screenId) {
         const screens = document.querySelectorAll('.screen');
         screens.forEach(screen => {
@@ -34,46 +34,54 @@ const ui = {
 
     // 問題表示
     displayQuestion(questionData, currentNum, totalNum, mode) {
-        // ↓↓↓ ボタンの状態をリセットする処理を追加 ↓↓↓
+        // ボタンリセット (変更なし)
         if (this.nextQuestionBtn) {
-            this.nextQuestionBtn.textContent = '次の問題へ'; // ボタンテキストをデフォルトに戻す
-            this.nextQuestionBtn.style.display = 'none';     // 一旦非表示に
+            this.nextQuestionBtn.textContent = '次の問題へ';
+            this.nextQuestionBtn.style.display = 'none';
         }
-        // ↑↑↑ リセット処理終了 ↑↑↑
-
         this.feedbackText.textContent = ''; this.feedbackText.className = '';
-        this.infoImage.style.display = 'none'; this.infoImage.src = '';
-        // this.nextQuestionBtn.style.display = 'none'; // 上でリセットしているので不要
+        if (this.infoImage) { // infoImage も初期化
+             this.infoImage.style.display = 'none'; this.infoImage.src = '';
+        }
 
         const questionTotalDisplay = (mode === 'timeAttack') ? '∞' : totalNum;
-        this.questionCounter.textContent = `問題 ${currentNum} / ${questionTotalDisplay}`;
+        if (this.questionCounter) this.questionCounter.textContent = `問題 ${currentNum} / ${questionTotalDisplay}`;
 
-        // タイマー表示ロジック (quizRef 参照)
+        // タイマー表示 (変更なし)
         const timeLimit = (this.quizRef && this.quizRef.timeLimit !== undefined) ? this.quizRef.timeLimit : 0;
         const shouldShowTimer = timeLimit > 0;
         if (this.timerDisplay) {
             this.timerDisplay.style.display = shouldShowTimer ? 'block' : 'none';
-            console.log(`>>> displayQuestion: quizRef.timeLimit=${timeLimit}, Setting timer display to: ${this.timerDisplay.style.display}`);
             if (!shouldShowTimer) { this.updateTimerDisplay(null); }
-        } else {
-            console.error("Timer display element (#timer) not found!");
         }
 
-        // 画像表示
-        if (questionData.image) {
-            if (this.quizImage) {
-                 this.quizImage.src = questionData.image; this.quizImage.style.display = 'block';
-                 this.quizImage.onerror = () => { this.quizImage.alt = '画像読込失敗'; this.quizImage.style.display = 'none'; };
-                 this.quizImage.alt = `HamCup ${questionData?.originalData?.name || ''} Image`;
-             }
-        } else {
-             if(this.quizImage) { this.quizImage.style.display = 'none'; this.quizImage.src = ''; this.quizImage.alt = ''; }
+        // ★★★★★★★★★★★★ 画像表示 (quizImage の src 設定修正) ★★★★★★★★★★★★
+        if (this.quizImage) { // quizImage要素が存在するかチェック
+            const imagePath = questionData.image; // "quiz/001.png" などが入っている想定
+            if (imagePath) {
+                const baseUrl = import.meta.env.BASE_URL;
+                const finalSrc = (baseUrl.endsWith('/') ? baseUrl : baseUrl + '/') + imagePath;
+                console.log('Setting quiz image src:', finalSrc); // デバッグ用ログ
+                this.quizImage.src = finalSrc; // ★修正後のパスを設定
+                this.quizImage.style.display = 'block';
+                this.quizImage.alt = `HamCup ${questionData?.originalData?.name || ''} Image`; // Altテキスト設定
+                this.quizImage.onerror = () => { // エラーハンドリング
+                    console.error(`ERROR loading quiz image: ${finalSrc}`);
+                    this.quizImage.alt = '画像読込失敗';
+                    this.quizImage.style.display = 'none';
+                };
+            } else {
+                this.quizImage.style.display = 'none'; // 画像パスがない場合は非表示
+                this.quizImage.src = '';
+                this.quizImage.alt = '';
+            }
         }
+        // ★★★★★★★★★★★★ ここまで修正 ★★★★★★★★★★★★
 
-        // 質問文表示
+        // 質問文表示 (変更なし)
         if(this.questionText) { this.questionText.textContent = questionData.text; }
 
-        // 回答選択肢表示
+        // 回答選択肢表示 (変更なし)
         if(this.answerOptionsContainer) {
             this.answerOptionsContainer.innerHTML = '';
              if (!questionData.choices || questionData.choices.length === 0) { this.answerOptionsContainer.innerHTML = '<p>選択肢の生成に失敗しました。</p>'; return; }
@@ -82,17 +90,17 @@ const ui = {
                 button.addEventListener('click', () => {
                     this.disableAnswerButtons();
                     if (this.quizRef && typeof this.quizRef.submitAnswer === 'function') {
-                        this.quizRef.submitAnswer(choice);
+                         this.quizRef.submitAnswer(choice);
                     } else {
-                        console.error("Quiz reference or submitAnswer method is not set correctly in ui object.");
-                    }
+                         console.error("Quiz reference or submitAnswer method is not set correctly in ui object.");
+                     }
                 });
                 this.answerOptionsContainer.appendChild(button);
             });
         }
     },
 
-    // 回答ボタン無効化
+    // 回答ボタン無効化 (変更なし)
     disableAnswerButtons() {
         if (this.answerOptionsContainer) {
             const buttons = this.answerOptionsContainer.querySelectorAll('.answer-btn');
@@ -100,8 +108,7 @@ const ui = {
         }
     },
 
-    // 正誤フィードバック表示 (練習モード用) (quizRef 参照)
-    // quiz.js 側で currentQuestion を渡すように修正した前提
+    // 正誤フィードバック表示
     displayFeedback(isCorrect, correctAnswer, infoImageUrl, currentQuestionData) {
         console.log("--- displayFeedback called ---");
         if(this.feedbackText) {
@@ -109,32 +116,46 @@ const ui = {
             this.feedbackText.className = isCorrect ? 'correct' : 'incorrect';
         }
 
-        // const currentQuestionData = (this.quizRef && typeof this.quizRef.getCurrentQuestion === 'function') ? this.quizRef.getCurrentQuestion() : null;
-        console.log("displayFeedback: Current question data:", currentQuestionData);
-        if (currentQuestionData) {
-             const correctImageToShow = currentQuestionData.answerImage || currentQuestionData.image;
-             console.log(`displayFeedback: Image path determined for #quiz-image: ${correctImageToShow}`);
-             if (correctImageToShow && this.quizImage) {
-                 this.quizImage.src = correctImageToShow;
-                 this.quizImage.alt = `正解: ${currentQuestionData.correctAnswer || ''} の画像`;
-                 this.quizImage.style.display = 'block';
-                 this.quizImage.onerror = () => { console.error(`displayFeedback: ERROR loading image for #quiz-image: ${correctImageToShow}`); this.quizImage.alt = '画像読込失敗'; this.quizImage.style.display = 'none'; };
-                 this.quizImage.onload = () => { console.log(`displayFeedback: Successfully loaded image for #quiz-image: ${correctImageToShow}`); };
-             } else {
-                 if(this.quizImage) this.quizImage.style.display = 'none';
-             }
-         } else {
-              console.warn("displayFeedback: Could not get currentQuestionData.");
-         }
+        const baseUrl = import.meta.env.BASE_URL; // ベースURLをここで取得
 
-        if (infoImageUrl && this.infoImage) {
-            this.infoImage.src = infoImageUrl;
-            this.infoImage.style.display = 'block';
-            this.infoImage.onerror = () => { this.infoImage.style.display = 'none'; this.infoImage.alt = '情報画像読込失敗'; };
-            this.infoImage.alt = `詳細情報: ${correctAnswer}`;
-        } else {
-            if(this.infoImage) { this.infoImage.style.display = 'none'; this.infoImage.src = ''; this.infoImage.alt = ''; }
+        // ★★★★★★★★★★★★ 正解画像表示 (quizImage の src 設定修正) ★★★★★★★★★★★★
+        if (this.quizImage) { // quizImage要素が存在するかチェック
+             console.log("displayFeedback: Current question data for image:", currentQuestionData);
+             const correctImageToShow = currentQuestionData ? (currentQuestionData.answerImage || currentQuestionData.image) : null;
+             console.log(`displayFeedback: Image path determined for #quiz-image: ${correctImageToShow}`);
+
+             if (correctImageToShow) {
+                 const finalSrc = (baseUrl.endsWith('/') ? baseUrl : baseUrl + '/') + correctImageToShow;
+                 console.log('Setting feedback quiz image src:', finalSrc); // デバッグ用ログ
+                 this.quizImage.src = finalSrc; // ★修正後のパスを設定
+                 this.quizImage.alt = `正解: ${correctAnswer || ''} の画像`;
+                 this.quizImage.style.display = 'block';
+                 this.quizImage.onerror = () => { console.error(`displayFeedback: ERROR loading image for #quiz-image: ${finalSrc}`); this.quizImage.alt = '画像読込失敗'; this.quizImage.style.display = 'none'; };
+                 this.quizImage.onload = () => { console.log(`displayFeedback: Successfully loaded image for #quiz-image: ${finalSrc}`); };
+             } else {
+                 this.quizImage.style.display = 'none';
+                 this.quizImage.src = '';
+                 this.quizImage.alt = '';
+             }
         }
+        // ★★★★★★★★★★★★ ここまで修正 ★★★★★★★★★★★★
+
+        // ★★★★★★★★★★★★ INFO画像表示 (infoImage の src 設定修正) ★★★★★★★★★★★★
+        if (this.infoImage) { // infoImage要素が存在するかチェック
+            if (infoImageUrl) {
+                const finalSrc = (baseUrl.endsWith('/') ? baseUrl : baseUrl + '/') + infoImageUrl;
+                console.log('Setting info image src:', finalSrc); // デバッグ用ログ
+                this.infoImage.src = finalSrc; // ★修正後のパスを設定
+                this.infoImage.style.display = 'block';
+                this.infoImage.alt = `詳細情報: ${correctAnswer}`;
+                this.infoImage.onerror = () => { console.error(`displayFeedback: ERROR loading image for #info-image: ${finalSrc}`); this.infoImage.style.display = 'none'; this.infoImage.alt = '情報画像読込失敗'; };
+            } else {
+                this.infoImage.style.display = 'none';
+                this.infoImage.src = '';
+                this.infoImage.alt = '';
+            }
+        }
+        // ★★★★★★★★★★★★ ここまで修正 ★★★★★★★★★★★★
 
         if(this.answerOptionsContainer){
             const buttons = this.answerOptionsContainer.querySelectorAll('.answer-btn');
@@ -143,27 +164,25 @@ const ui = {
         console.log("--- displayFeedback finished ---");
     },
 
-    // 「次の問題へ」ボタン表示 (練習モード用)
+    // 「次の問題へ」ボタン表示 (変更なし)
     showNextButton() {
         if(this.nextQuestionBtn) {
-            this.nextQuestionBtn.textContent = '次の問題へ'; // テキストを確実に設定
+            this.nextQuestionBtn.textContent = '次の問題へ';
             this.nextQuestionBtn.style.display = 'inline-block';
         }
     },
 
-    // ↓↓↓ ★★★ 新しいメソッドを追加 ★★★ ↓↓↓
-    /** 練習モード最後の問題で「次の問題へ」ボタンを「結果を見る」に変える */
+    // 練習モード最後のボタン変更 (変更なし)
     changeNextButtonToResults() {
         if(this.nextQuestionBtn) {
-            this.nextQuestionBtn.textContent = '結果を見る'; // テキスト変更
-            this.nextQuestionBtn.style.display = 'inline-block'; // 表示する
+            this.nextQuestionBtn.textContent = '結果を見る';
+            this.nextQuestionBtn.style.display = 'inline-block';
         } else {
              console.error("nextQuestionBtn not found, cannot change to results button.");
          }
     },
-    // ↑↑↑ ここまで追加 ↑↑↑
 
-    // タイマー表示更新
+    // タイマー表示更新 (変更なし)
     updateTimerDisplay(seconds) {
         if (!this.timerDisplay) return;
         if (seconds === null || typeof seconds === 'undefined' || seconds < 0) {
@@ -176,12 +195,11 @@ const ui = {
        this.timerDisplay.textContent = timerText;
     },
 
-    // 結果表示 (quizRef 参照を削除し timeLimit を引数で受け取る)
-    // quiz.js 側で timeLimit を渡すように修正した前提
+    // 結果表示 (変更なし)
     displayResults(score, attemptedQuestionsCount, mode, timeTaken, userAnswers, timeLimit) {
         if(this.scoreDisplay) {
             let scoreText = `スコア: ${score}`;
-            if (mode === 'main' || mode === 'practice' || mode === 'practiceCharacter') { // 練習モードでも合計問題数を表示
+            if (mode === 'main' || mode === 'practice' || mode === 'practiceCharacter') {
                 scoreText += ` / ${attemptedQuestionsCount}`;
             }
             else if (mode === 'timeAttack') {
@@ -197,7 +215,7 @@ const ui = {
                  this.timeTakenDisplay.textContent = `解答時間: ${minutes}分 ${seconds}秒`;
                  this.timeTakenDisplay.style.display = 'block';
             } else {
-                 this.timeTakenDisplay.style.display = 'none'; // 練習、TAでは非表示
+                 this.timeTakenDisplay.style.display = 'none';
             }
         }
 
@@ -206,14 +224,13 @@ const ui = {
             const list = document.createElement('ul');
             if(userAnswers && userAnswers.length > 0) {
                 userAnswers.forEach((answer, index) => {
-                     if (!answer) return; // 不完全な解答データはスキップ
+                     if (!answer) return;
                     const li = document.createElement('li');
                     const charName = answer.characterName ? ` (${answer.characterName})` : '';
-                    // テキストが長すぎる場合があるので調整 (例: 50文字)
                     const questionTextShort = answer.questionText ? answer.questionText.substring(0, 50) + (answer.questionText.length > 50 ? '...' : '') : '質問不明';
-                    const correctAnswerText = answer.correctAnswer ?? '正解不明'; // null/undefinedの場合の表示
-                    const userAnswerText = answer.userAnswer ?? '未解答'; // null/undefinedの場合の表示
-                    const correctnessMark = answer.isCorrect === true ? '✓' : (answer.isCorrect === false ? '✗' : '?'); // boolean以外も考慮
+                    const correctAnswerText = answer.correctAnswer ?? '正解不明';
+                    const userAnswerText = answer.userAnswer ?? '未解答';
+                    const correctnessMark = answer.isCorrect === true ? '✓' : (answer.isCorrect === false ? '✗' : '?');
 
                     let answerDetailHTML = `<span>問題 ${index + 1}:${charName} ${questionTextShort}</span> <span class="correct-answer">正解: ${correctAnswerText}</span> <span class="user-answer ${answer.isCorrect ? 'correct' : 'incorrect'}">あなたの回答: ${userAnswerText} ${correctnessMark}</span>`;
                     li.innerHTML = answerDetailHTML;
@@ -232,11 +249,11 @@ const ui = {
         return null;
     },
 
-    // displayHighScores (オンライン対応済み)
+    // displayHighScores (変更なし)
     async displayHighScores(fetchScoresFunc) {
         console.log("Updating ONLINE high scores display...");
         if (!this.highScoresArea) { return; }
-        if (typeof fetchScoresFunc !== 'function') { /* ... */ return; }
+        if (typeof fetchScoresFunc !== 'function') { return; }
         this.highScoresArea.innerHTML = '<h2>ハイスコア Top 3</h2>';
         const scoreCategories = [
             { mode: 'main', value: 10, title: '本番 (10問)' }, { mode: 'main', value: 30, title: '本番 (30問)' },
@@ -256,18 +273,18 @@ const ui = {
                         const li = document.createElement('li'); let details = '';
                         const scoreDate = entry.created_at ? new Date(entry.created_at).toLocaleDateString('ja-JP') : '日付不明';
                         if (category.mode === 'main') {
-                            const timeStr = entry.time_taken_seconds !== null && entry.time_taken_seconds !== undefined ? `${entry.time_taken_seconds}秒` : '- 秒';
-                            details = `(${entry.score}点, ${timeStr}, ${scoreDate})`;
+                             const timeStr = entry.time_taken_seconds !== null && entry.time_taken_seconds !== undefined ? `${entry.time_taken_seconds}秒` : '- 秒';
+                             details = `(${entry.score}点, ${timeStr}, ${scoreDate})`;
                         } else if (category.mode === 'timeAttack') { details = `(${entry.score}点 / ${category.value}秒, ${scoreDate})`; }
-                        else { details = `(${entry.score}点, ${scoreDate})`; }
+                         else { details = `(${entry.score}点, ${scoreDate})`; }
                         li.innerHTML = `<span class="rank">${index + 1}.</span> <span class="score-name">${entry.player_name || '名無し'}</span> <span class="score-details">${details}</span>`;
                         ol.appendChild(li);
                     });
                 } else { ol.innerHTML = '<li>まだ記録はありません</li>'; }
              } catch (error) {
-                 console.error(`Failed to load scores for ${category.title}:`, error);
-                 const ol = categoryDiv.querySelector('ol'); if (ol) { ol.innerHTML = '<li>読込失敗</li>'; }
-            }
+                  console.error(`Failed to load scores for ${category.title}:`, error);
+                  const ol = categoryDiv.querySelector('ol'); if (ol) { ol.innerHTML = '<li>読込失敗</li>'; }
+              }
         }
     }
 };

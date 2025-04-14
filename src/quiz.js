@@ -1,4 +1,4 @@
-// quiz.js (完全版 - 持ち物対応、重複選択肢対応、依存性注入対応、練習結果ボタン対応)
+// quiz.js (question-mark.png のパス修正済み)
 
 const quiz = {
     questions: [],
@@ -32,7 +32,7 @@ const quiz = {
         }
     },
 
-    // 問題データの配列から、実際のクイズ問題形式を生成する (持ち物対応、重複選択肢対応済み)
+    // 問題データの配列から、実際のクイズ問題形式を生成する
     generateQuizQuestions(data) {
         const generatedQuestions = [];
         if (!Array.isArray(data)) return generatedQuestions;
@@ -46,7 +46,7 @@ const quiz = {
         const allSkills = data.map(h => h.skill).filter(t => t);
         const allSweets = data.map(h => h.sweets).filter(t => t);
         const allPersonalities = data.map(h => h.personality).filter(t => t);
-        const allItems = data.map(h => h.item).filter(i => i); // item を追加
+        const allItems = data.map(h => h.item).filter(i => i);
         let allProfileAnswers = new Set();
         data.forEach(hamcup => {
             if (hamcup.profile) {
@@ -58,13 +58,13 @@ const quiz = {
 
         // 各 HamCup データから問題を生成
         data.forEach(hamcup => {
-            const commonProps = { infoImage: hamcup.image_info, originalData: hamcup, characterName: hamcup.name }; // characterName を追加済み
+            const commonProps = { infoImage: hamcup.image_info, originalData: hamcup, characterName: hamcup.name };
             const traits = [
                 { key: 'hobby', name: '趣味', pool: allHobbies },
                 { key: 'skill', name: '特技', pool: allSkills },
                 { key: 'sweets', name: '和菓子', pool: allSweets },
                 { key: 'personality', name: '性格', pool: allPersonalities },
-                { key: 'item', name: '持ち物', pool: allItems } // item を追加済み
+                { key: 'item', name: '持ち物', pool: allItems }
             ];
 
             // --- 問題タイプ生成 ---
@@ -87,23 +87,21 @@ const quiz = {
                     const currentValue = hamcup[traitInfo.key];
                     const correctAnswerName = hamcup.name;
 
-                    // この特性値を持つ他のキャラクター名を探す
                     const duplicateCharacterNames = data
                         .filter(h => h.name !== correctAnswerName && h[traitInfo.key] === currentValue)
                         .map(h => h.name);
 
-                    // 選択肢プールから重複キャラを除外
                     const filteredNamePool = allNames.filter(name => !duplicateCharacterNames.includes(name));
-
-                    // フィルター済みのプールを使って選択肢を生成
                     const choices = this.generateChoices(correctAnswerName, filteredNamePool);
 
                     generatedQuestions.push({
                         ...commonProps,
                         type: `${traitInfo.key}_to_name`,
                         text: `『${currentValue}』が${traitInfo.name}なのは誰？`,
-                        image: 'assets/images/question-mark.png',
-                        answerImage: hamcup.image_quiz,
+                        // ★★★★★★★★★★★★ ここを修正 ★★★★★★★★★★★★
+                        image: 'question-mark.png', // 'assets/images/' を削除
+                        // ★★★★★★★★★★★★ ここまで修正 ★★★★★★★★★★★★
+                        answerImage: hamcup.image_quiz, // 正解時に表示する画像パス
                         correctAnswer: correctAnswerName,
                         choices: choices
                     });
@@ -126,23 +124,20 @@ const quiz = {
         return generatedQuestions;
     },
 
-    // 選択肢を生成する
-    generateChoices(correctAnswer, optionsPool) { // 引数名を allOptionsPool -> optionsPool に変更 (意味は同じ)
+    // 選択肢を生成する (変更なし)
+    generateChoices(correctAnswer, optionsPool) {
         const choices = new Set();
         if (correctAnswer !== null && correctAnswer !== undefined && String(correctAnswer).trim() !== '') {
             choices.add(String(correctAnswer));
         }
-        // optionsPool (全キャラ名またはフィルター済みキャラ名) から重複を除き、正解も除外
         const uniqueOptions = [...new Set(optionsPool)]
-                              .map(opt => String(opt))
-                              .filter(opt => opt.trim() !== '' && opt !== String(correctAnswer));
+                             .map(opt => String(opt))
+                             .filter(opt => opt.trim() !== '' && opt !== String(correctAnswer));
         const maxChoices = 4;
-        // 不正解の選択肢を追加
         while (choices.size < maxChoices && uniqueOptions.length > 0) {
             const randomIndex = Math.floor(Math.random() * uniqueOptions.length);
             choices.add(uniqueOptions.splice(randomIndex, 1)[0]);
         }
-        // それでも足りなければダミー選択肢を追加
         const dummyAnswers = ["？？？", "---", "データなし", "ひみつ"];
         let dummyIndex = 0;
          while (choices.size < maxChoices && dummyIndex < dummyAnswers.length) {
@@ -154,7 +149,7 @@ const quiz = {
         return this.shuffleArray(Array.from(choices));
     },
 
-    // 配列をシャッフルする
+    // 配列をシャッフルする (変更なし)
     shuffleArray(array) {
         if (!Array.isArray(array)) return [];
         for (let i = array.length - 1; i > 0; i--) {
@@ -164,7 +159,7 @@ const quiz = {
         return array;
     },
 
-    // 現在の問題データを取得
+    // 現在の問題データを取得 (変更なし)
     getCurrentQuestion() {
         if (this.questions && Array.isArray(this.questions) && this.currentIndex >= 0 && this.currentIndex < this.questions.length) {
             return this.questions[this.currentIndex];
@@ -172,7 +167,7 @@ const quiz = {
         return null;
     },
 
-    // 問題を読み込んで表示
+    // 問題を読み込んで表示 (変更なし)
     loadQuestion() {
         const questionData = this.getCurrentQuestion();
         if (questionData) {
@@ -190,7 +185,7 @@ const quiz = {
         }
     },
 
-    // 回答処理 (練習モード結果ボタン対応済み)
+    // 回答処理 (変更なし)
     submitAnswer(selectedAnswer) {
         const currentQuestion = this.getCurrentQuestion();
         if (!currentQuestion) return;
@@ -205,18 +200,18 @@ const quiz = {
 
             if (this.currentIndex === this.questions.length - 1) { // 最後の問題か？
                 if(typeof this.uiUtils.changeNextButtonToResults === 'function') {
-                    this.uiUtils.changeNextButtonToResults(); // 「結果を見る」ボタン表示
-                } else { console.error("changeNextButtonToResults function is not provided via uiUtils"); }
+                     this.uiUtils.changeNextButtonToResults(); // 「結果を見る」ボタン表示
+                 } else { console.error("changeNextButtonToResults function is not provided via uiUtils"); }
             } else { // 最後でなければ「次へ」ボタン表示
                 if(typeof this.uiUtils.showNextButton === 'function') {
-                    this.uiUtils.showNextButton();
-                } else { console.error("showNextButton function is not provided via uiUtils"); }
+                     this.uiUtils.showNextButton();
+                 } else { console.error("showNextButton function is not provided via uiUtils"); }
             }
         }
         else { this.moveToNextQuestion(); } // 本番・TAは次へ
     },
 
-    // 次の問題へ進む
+    // 次の問題へ進む (変更なし)
     moveToNextQuestion() {
         this.currentIndex++;
         if (this.mode === 'timeAttack' && this.currentIndex >= this.questions.length) {
@@ -229,38 +224,80 @@ const quiz = {
         }
     },
 
-    // クイズ終了処理 (練習モード結果表示は main.js で制御)
+    // クイズ終了処理 (変更なし)
     endQuiz() {
         const timeTaken = this.timeLimit > 0 ? this.timeLimit - this.timeRemaining : 0;
         this.stopTimer();
         console.log(`Quiz ended. Mode: ${this.mode}, Score: ${this.score}/${this.userAnswers.length}, Time Taken/Remaining: ${timeTaken}s / ${this.timeRemaining}s`);
 
-        // ランキング対象モードの場合のみスコア保存/送信
         if (typeof this.callbacks.maybeSaveHighScore === 'function' && (this.mode === 'main' || this.mode === 'timeAttack')) {
             this.callbacks.maybeSaveHighScore(this.score, timeTaken);
         } else if (this.mode === 'main' || this.mode === 'timeAttack') {
              console.warn("maybeSaveHighScore callback function not provided.");
          }
 
-        // 練習モード以外は結果画面を表示
         if (this.mode !== 'practice' && this.mode !== 'practiceCharacter') {
             if(typeof this.uiUtils.displayResults === 'function') {
-                this.uiUtils.displayResults(this.score, this.userAnswers.length, this.mode, timeTaken, this.userAnswers, this.timeLimit);
-            } else { console.error("displayResults function is not provided via uiUtils"); }
+                 this.uiUtils.displayResults(this.score, this.userAnswers.length, this.mode, timeTaken, this.userAnswers, this.timeLimit);
+             } else { console.error("displayResults function is not provided via uiUtils"); }
             if(typeof this.uiUtils.showScreen === 'function') {
-                this.uiUtils.showScreen('results-screen');
-            } else { console.error("showScreen function is not provided via uiUtils"); }
+                 this.uiUtils.showScreen('results-screen');
+             } else { console.error("showScreen function is not provided via uiUtils"); }
          } else {
              console.log("Practice quiz ended normally (not via results button).");
          }
     },
 
-    // タイマー関連 (依存性注入済み)
-    startTimer() { /* ... */ },
-    stopTimer() { /* ... */ },
-    resetTimer() { /* ... */ },
-     // クイズ状態リセット (変更なし)
-    resetQuizState() { /* ... */ }
+    // タイマー関連 (省略 - 実装されている前提)
+    startTimer() {
+        this.stopTimer(); // Ensure no duplicate timers
+        if (this.timeLimit <= 0) return;
+        this.timeRemaining = this.timeLimit; // Start from full time limit
+        if(typeof this.uiUtils.updateTimerDisplay === 'function') {
+             this.uiUtils.updateTimerDisplay(this.timeRemaining);
+        }
+        this.timerId = setInterval(() => {
+            this.timeRemaining--;
+            if (typeof this.uiUtils.updateTimerDisplay === 'function') {
+                this.uiUtils.updateTimerDisplay(this.timeRemaining);
+            }
+            if (this.timeRemaining <= 0) {
+                this.stopTimer();
+                this.endQuiz(); // 時間切れで終了
+                alert('時間切れ！');
+            }
+        }, 1000);
+        console.log(`Timer started. ID: ${this.timerId}, Remaining: ${this.timeRemaining}`);
+    },
+    stopTimer() {
+        if (this.timerId !== null) {
+            console.log(`Stopping timer ID: ${this.timerId}`);
+            clearInterval(this.timerId);
+            this.timerId = null;
+        }
+    },
+    resetTimer() {
+        this.stopTimer();
+        this.timeRemaining = 0;
+        if (typeof this.uiUtils.updateTimerDisplay === 'function') {
+             this.uiUtils.updateTimerDisplay(null); // タイマー表示をクリア
+        } else {
+             console.error("updateTimerDisplay function is not provided via uiUtils.");
+         }
+        console.log("Timer reset.");
+    },
+
+    // クイズ状態リセット
+    resetQuizState() {
+        this.questions = [];
+        this.currentIndex = 0;
+        this.score = 0;
+        this.mode = '';
+        this.timeLimit = 0;
+        this.userAnswers = [];
+        this.resetTimer();
+        console.log("Quiz state reset.");
+    }
 };
 
 export default quiz;
