@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HamCup クイズ練習</title>
-    <link rel="stylesheet" href="css/style.css">
-</head>
+    <link rel="stylesheet" href="/src/style.css">
+    </head>
 <body>
 
     <div id="app-container">
@@ -17,6 +17,27 @@
                 <button id="start-practice-sequential-btn" disabled>順番に出題 (読込中...)</button>
                 <button id="start-practice-random-btn" disabled>ランダム出題 (読込中...)</button>
             </div>
+
+            <div class="mode-section">
+                <h2>キャラ別練習</h2>
+                <div>
+                    <label for="character-select">キャラクター選択:</label>
+                    <select name="characters" id="character-select">
+                        <option value="">--選択してください--</option>
+                        </select>
+                </div>
+                <button id="start-practice-character-sequential-btn" disabled>このキャラで練習 (順番)</button>
+                <button id="start-practice-character-random-btn" disabled>このキャラで練習 (ランダム)</button>
+            </div>
+            
+            <div class="mode-section"> <h2>本番クイズ (問題数選択)</h2>
+                <button class="main-quiz-btn" id="start-main-10-btn" data-questions="10" disabled>10問</button>
+                <button class="main-quiz-btn" id="start-main-30-btn" data-questions="30" disabled>30問</button>
+                <button class="main-quiz-btn" id="start-main-50-btn" data-questions="50" disabled>50問</button>
+                <button class="main-quiz-btn" id="start-main-100-btn" data-questions="100" disabled>100問</button>
+                <button class="main-quiz-btn" id="start-main-350-btn" data-questions="350" disabled>350問</button>
+            </div>
+
 
             <div class="mode-section">
                 <h2>本番クイズ (問題数選択)</h2>
@@ -69,8 +90,6 @@
 
     </div>
 
-    <script src="js/quiz.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/main.js" defer></script>
-    </body>
+    <script type="module" src="/src/main.js"></script>
+</body>
 </html>
